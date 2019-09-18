@@ -161,4 +161,38 @@ end
     	\end{lstlisting}
 
 
+\section{RTM, a2d\_rtm\_abc28\_snapshot.m}	
+	this is a section to realize the RTM(reverse time migration) method.According the introduction in \cite[Schuster 2015]{SI}. There are some aspects:
+
+	\begin{itemize}
+		\item[1] \textbf{how to calculate the backpropagated wavefield?} To get the image of RTM , we need the corelation of the wavefield from source and the backpropagated wavefield from geophones,but how to get the backpropagated wavefield? Does the Green function's reciprocity work?
+		\item[2] \textbf{how to get the approximated velocity?} The wavefield from source is required to be a down-going propagation, so what features of veolicity are need to get the down-going wavefield?
+	\end{itemize}
+
+	\section{get the simuation Data and Smooth velocity}
+
+	We could use the FD method in section 1 to get the simuation seismic data in geophones, as \autoref{rtm_simD} shows. Smoothed velocity means that the interface becomes not so sharp?
+
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\linewidth]{./fig/rtm_simuationData.eps}
+		\caption{data prepared for RMT}
+		\label{rtm_simD}
+	\end{figure}
+
+	\section{RTM, correlation between D \& U}
+
+
+
+
+
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{references.bib}
+
+
+
 \end{document}
