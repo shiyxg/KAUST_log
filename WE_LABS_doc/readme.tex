@@ -169,7 +169,7 @@ end
 		\item[2] \textbf{how to get the approximated velocity?} The wavefield from source is required to be a down-going propagation, so what features of veolicity are need to get the down-going wavefield?
 	\end{itemize}
 
-	\section{get the simuation Data and Smooth velocity}
+	\subsection{get the simuation Data and Smooth velocity}
 
 	We could use the FD method in section 1 to get the simuation seismic data in geophones, as \autoref{rtm_simD} shows. Smoothed velocity means that the interface becomes not so sharp?
 
@@ -180,18 +180,69 @@ end
 		\label{rtm_simD}
 	\end{figure}
 
-	\section{RTM, correlation between D \& U}
+	\subsection{RTM, correlation between D \& U}
+
+	About RTM ,we could derive it from the following relations:\par
+	First: we have the relation in frequency domain from  Fréchet derivative\cite{SI}[equation 10.23] and born approximation(consider the source function as $\delta(t)$ and neglect the sum of geophones and sources):
+	\begin{align}
+		\Delta P(g|s)& =2\omega^2s(x)\Delta s(x)G(g|x)G(x|s)\\
+		we\ could\ derive\ :&\notag\\
+		\frac{\partial P(g|s)}{\partial s(x)}&=2s(x)\omega^2G(g|x)G(x|s) \label{FE}
+	\end{align}
+
+	Before considering the meaning of RTM, we define a loss function of to get the model(use conjugate of P to make sure result is real:
+	$$\epsilon=1/2 \int_{\omega}\Delta P(g|s)^* \Delta P(g|s) $$
+	get:
+	\begin{align}
+		\frac{\partial \epsilon}{\partial s(x)}
+		&=\int_{\omega}\frac{\partial P(g|s)}{\partial s(x)}^* \Delta P(g|s)\\
+		&=2s(x)\int_{\omega}\omega^2G(g|x)^*G(x|s)^* \Delta P(g|s) \\
+		&=2s(x)\int_{\omega}G(x|s)^* [G(g|x)^* \omega^2\Delta P(g|s)]
+	\end{align}
+	we want to get the equation in time domain:
+	\begin{align}
+		\frac{\partial \epsilon}{\partial s}
+		&=-2s(x)\int_{t} D(x,t) \star U(x,t)\\
+		D(x,t)=G(x,t|s,0)&,\ U(x,t)=-\mathcal{F}^{-1}[G(g|x)^* \omega^2\Delta P(g|s)] \notag
+	\end{align}
+	$D(x,t)$ means the forward wavefield from source (when we add the neglected source function to D); and about $U(x,t)$:
+	\begin{align}
+		U(x,t) 
+		& = G(g,-t|x, 0) * \Delta P''(g,t|s,0) \notag\\
+		& = G(x,-t|g, 0) * \Delta P''(g,t|s,0) \label{BP-G}\\
+		& = G(x,t|g, 0) * d''(g,t)\label{BP-S}\\
+		& d''(g,t)= \Delta P''(g,-t|s,0)\notag
+	\end{align}
+
+	From \autoref{BP-S}, we can see that if we consider $d''(x,t)$as a source, $U(x,t)$ means a wavefield from geophones with the source $d''(x,t)$, while $d''(x,t)$ is reverse $\Delta P''(t)$ in time. But If we consider from \autoref{BP-G}, $U(x,t)$ is the backpropagated wavefield from geophones. \autoref{BP-S} gives us a method to compute the BP wavefield.\par If we want to iterize the $s(x)$ to make $\epsilon$ smaller, we can use:
+	\begin{align}
+		s^{i+1}(x) &= s^i(x)-\alpha \frac{\partial \epsilon}{\partial s^i}\\
+				   &= s^i(x)+2\alpha s(x)\int_{t} D(x,t) \star U(x,t)
+	\end{align}
+	$$$$
+
+	Back to RMT, the imagration's definition in RTM is :
+		\begin{align}
+			m_{mig} &= \frac{s^{1}(x)-s^0(x)}{2\alpha} \notag\\
+					&= s^0  	(x)\int_{t} D(x,t) \star U(x,t)dt
+		\end{align}
+	with all sources and geophones:
+		\begin{align}
+			m_{mig}(x) &= s(x)\sum_s \sum_g\int_{t} D_s(x,t) \star U_g (x,t)dt \notag\\
+					   &= s(x)\sum_s \int_{t} \big[G(x,t|s,0)*W(t|s)\big] \star \sum_g \big[G(x,t|g, 0) * d''(g,t)\big]dt
+		\end{align}\par
+	
+	In applications, we can get $d''(t)$ and the approximated $s(x)$ and $W(t)$. If we want to use RTM to only get the location of reflection:
+	\begin{itemize}
+		\item \textbf{smooth V} make sure the downgoing wavefield of source have no reflection to geophone
+		\item \textbf{mute the diret wave} we only want the reflection part of wavefield, so we can calculate the directive wave$d_d$ and then make $d''=d''-d_d$
+	\end{itemize}
 
 
+	
 
-
-
-
-
-
-
+\bibliography{references}
 \bibliographystyle{plain}
-\bibliography{references.bib}
 
 
 
