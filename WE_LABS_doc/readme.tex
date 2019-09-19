@@ -138,7 +138,7 @@ end
 			\label{FD-ABC}			
 		\end{align}
 
-		And the program language is as \autoref{FDCode} shows
+		And the program language is as \autoref{FDCode} shows\footnote{why $p(isz,isx) = p(isz,isx) + beta_dt(isz,isx) * s(it)$}
 		\begin{lstlisting}[caption=set ABC to the velocity variable (2 is same), label=FDCode,basicstyle=\tiny, numberstyle=\tiny]
 % 
 alpha=(v*dt/dx).^2; kappa=damp*dt;
@@ -236,7 +236,45 @@ end
 	\begin{itemize}
 		\item \textbf{smooth V} make sure the downgoing wavefield of source have no reflection to geophone
 		\item \textbf{mute the diret wave} we only want the reflection part of wavefield, so we can calculate the directive wave$d_d$ and then make $d''=d''-d_d$
+		\item \textbf{illumination compensation}\footnote{my question is: do we need to calculate difference A(x) for difference sources?} with the increasing of distance from source, the amplitude will decrease, so the $m_{mig}$ will decrease with depth. So we compensate $m_mig(x)$ with the $A(x)^2$ in wavefield from source, that is:
+		$$m_{mig}(x)=\frac{m_{mig}}{A(x)^2}\approx\frac{m_{mig}}{\sum_t D^2(x,t)}$$
+		\item \textbf{wavefield reconstruction} when we calculate $d''(g,t)$, we can get $D(x,t)$ and use it to dio corralation with $U(x,t)$. But it means we need store the whole time steps of wavefield, which could be difficult. So some times, we will only store the last two steps in $D(x,t)$ and all boundary condition, to backpropagate.
 	\end{itemize}
+
+	\subsection{Figures}
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\linewidth]{./fig/RTM_run_noc.eps}
+		\caption{RTM result without direct-wave muting and illumination compensation}
+		\label{RTM_noc}
+	\end{figure}
+	\begin{figure}[ht]
+		\centering
+		\includegraphics[width=1\linewidth]{./fig/RTM_run_mute.eps}
+		\caption{RTM result with direct-wave muting but without illumination compensation}
+		\label{RTM_noc_mute}
+	\end{figure}
+
+	\begin{figure}[ht]
+		\subfigure[IC's impact]
+		{
+			\includegraphics[width=0.5\linewidth]{./fig/RTM_run_c.eps}
+			\label{IC_impact}
+		}
+		\subfigure[IC's impact after muting direct-wave]
+		{
+			
+			\includegraphics[width=0.5\linewidth]{./fig/RTM_run_mutec.eps}
+			\label{IC_impact_mute}
+		}
+
+		\centering
+		\caption{the impacts of illumination compensation(IC) on the RTM result before \ref{IC_impact} and after \ref{IC_impact_mute} muting direct-wave }
+		\label{RTM_c}
+	\end{figure}
+
+\clearpage
+
 
 
 	
