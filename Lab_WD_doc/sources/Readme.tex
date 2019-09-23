@@ -1,0 +1,45 @@
+==Objective==
+
+Learn and explore the surface wave dispersion curve inversion (WD).
+
+[[File:P_velocity_iter10.png|600px|floatnone|x]]  [[File:S_velocity_iter10.png|600px|floatnone|x]]
+
+==Theory==
+
+We invert the the Rayleigh wave with wave equation dispersion curve inversion. 
+\begin{enumerate}
+\item {\bf Misfit function.} The dispersion misfit function $\epsilon$ is defined as the sum of squared dispersion residuals:
+\begin{eqnarray}
+\epsilon = \frac{1}{2} \sum_{\omega} (
+\overbrace{\kappa(\omega) -\kappa(\omega)^{obs}}^{residual=\Delta \kappa(\omega)})^2,
+\label{chskel.eq13}
+\end{eqnarray}
+
+so that the optimal shear-slowness model $s(\mathbf{x})$
+is obtained from the iterative steepest descent solution:
+\begin{eqnarray}
+s(\mathbf{x})^{(k+1)}
+            & = & s(\mathbf{x})^{(k)} - \alpha \sum_{\omega} \Delta \kappa(\omega)
+                  \frac{\partial \kappa(\omega)}{\partial s(\mathbf{x})}  ,
+\label{chskel.eq20}
+\end{eqnarray}
+where $\alpha$ is the step length and the superscript $(k)$ denotes the $k^{th}$ iteration.
+For pedagogical simplicity, we  assumed a single shot gather, but the misfit function includes an additional summation over
+different shot gathers if more than one shot gather is used.
+
+==Procedure==
+
+# Download [[File:Lab_WD.tar.gz]], extract the compressed package by 
+#: <code> tar -xvf Lab_WD.tar.gz </code>; and you will find file directory and matlab script.
+#:    '''core''': contain all the subroutines;
+#:    '''data''':  synthetic data will stored in the corresponding subdirectory;
+#:    '''result''': Vs initial model and Vs inversion results at each iteration will stored in the corresponding subdirectory;
+#:    '''staggerfd.m''': finite difference code to calculate the observed data and predicted data for surface waves. 
+#:    '''elastic_model.m''': build the true model and set input parameter. 
+#:    '''e2d_rtm_abc11.m''': calculate the gradient with RTM.
+#:    '''Radon_Transfrom_2_raw_test11.m''': calculate and extract the dispersion curve of each shot gather as objective function.
+#:    '''Surface_wave_WD.m''': the main inversion m-script.
+#:    '''result_plot.m''': plot results.
+# the "model" file include the Vp and Vs velocity. Make a subdirectory in '''core''', for example, modify the '''elastic_model.m''' to create vp and vs model, acquisitions etc;
+# Modify the basic parameter in '''Surface_wave_WD.m''', and run it to start the inversion;
+# Modify '''result_plot.m''' and run it to plot the inversion results and misfit.
