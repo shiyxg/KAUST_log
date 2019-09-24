@@ -94,7 +94,9 @@ end
 			\label{ricker}
 			\centering
 		\end{equation}
-		After we generate this ricker wavelet, we can enlength it by appending zeros. In this way, we can get a verctor of source, which's header is a ricker wavelet with f freq and $\Delta t$.
+		After we generate this ricker wavelet, we can enlength it by appending zeros. In this way, we can get a verctor of source, which's header is a ricker wavelet with f freq and $\Delta t$.\par
+
+		About how to put the source on the wavefield, we could get the wavefield at time t as $p_t(x)$, then just add the source:$p_t(x)=p_t(x)+s_t(s)\times \alpha$, where $\alpha$ is some parameter depend on source's physical meaning.
 	
 	\subsection{Propagate - FD}
 
@@ -120,21 +122,19 @@ end
 		\end{equation}
 		 and we have $c_0=-2 \sum_{i=1}^{n}c_i$.
 
-		When getting the expression of \textbf{$c_i$}, express the waveform equation as:\autoref{FD-n}, and \autoref{FD-ABC} with ABC.
+		When getting the expression of \textbf{$c_i$}, express the waveform equation as:\autoref{FD-n}, and \autoref{FD-ABC} with ABC and source's influence: \par
 		\begin{align}
 			&(\frac{v\Delta t}{\Delta x})^2\sum_{i=1}^n c_i[p_t(x+i\Delta x,z)+p_t(x-i\Delta x, z)] \notag\\
 			+&(\frac{v\Delta t}{\Delta z})^2\sum_{i=1}^n c_i[p_t(x, z+i\Delta z)+p_t(x, -i\Delta z)] \notag\\
 			+&[(\frac{v\Delta t}{\Delta x})^2c_0+(\frac{v\Delta t}{\Delta z})^2c_0]p_t(x,z)\notag\\
 			+&2p_t(x,z)-p_{t-1}(x,z)=p_{t+1}(x,z)
 			\label{FD-n}
-		\end{align}
-
-		\begin{align}
+			\\ \notag\\
 			&(\frac{v\Delta t}{\Delta x})^2\sum_{i=1}^n c_i[p_t(x+i\Delta x,z)+p_t(x-i\Delta x, z)] \notag\\
 			+&(\frac{v\Delta t}{\Delta z})^2\sum_{i=1}^n c_i[p_t(x, z+i\Delta z)+p_t(x, -i\Delta z)] \notag\\
 			+&[(\frac{v\Delta t}{\Delta x})^2c_0+(\frac{v\Delta t}{\Delta z})^2c_0]p_t(x,z)\notag\\
-			+&(2-\kappa)p_t(x,z)-(1-\kappa)p_{t-1}(x,z)=p_{t+1}(x,z) \notag\\
-			,&where\ \kappa=(\frac{d_{i2b}}{D_{abc}})^2\times 3.0 \times  16 v_{min}\times \Delta t 
+			+&(2-\kappa)p_t(x,z)-(1-\kappa)p_{t-1}(x,z)+s_{t+1}(x)\alpha=p_{t+1}(x,z) \notag\\
+			,&where\ \kappa=(\frac{d_{i2b}}{D_{abc}})^2\times 3.0 \times  16 v_{min}\times \Delta t.\ s(x,t)\ is\ source
 			\label{FD-ABC}			
 		\end{align}
 
@@ -160,6 +160,22 @@ for it=1:nt
 end
     	\end{lstlisting}
 
+\section{Born Modeling}
+
+	Born Modeling is use the pertubation of wavefield from source to as a new source to generate a new wavefield. For a simple acoustic equation:
+	
+	$$\frac{1}{s^2} \nabla^2p + f = \frac{\partial^2 p}{\partial t^2}$$
+	If there is some pertubation in $s(x)$:
+	$$\frac{1}{(s+\Delta s)^2} \nabla^2(p+\Delta p) + f = \frac{\partial^2 (p+\Delta P)}{\partial t^2}$$
+
+	Then we can get in time domain:
+	\begin{align}
+		\frac{1}{s^2} \nabla^2q - 2\frac{\Delta s}{s^3}\nabla^2p = \frac{\partial^2 q}{\partial t^2}, where\ q=\Delta p
+ 	\end{align}
+	in frequency domain:
+	\begin{align}
+		\nabla^2q + 2\omega^2 s\Delta s P= \omega^2 s\Delta s
+	\end{align}
 
 \section{RTM, a2d\_rtm\_abc28\_snapshot.m}	
 	this is a section to realize the RTM(reverse time migration) method.According the introduction in \cite[Schuster 2015]{SI}. There are some aspects:
@@ -273,7 +289,7 @@ end
 		\label{RTM_c}
 	\end{figure}
 
-\clearpage
+
 
 
 
