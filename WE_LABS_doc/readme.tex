@@ -124,7 +124,7 @@ end
 		\begin{align}
 			&(\frac{v\Delta t}{\Delta x})^2\sum_{i=1}^n c_i[p_t(x+i\Delta x,z)+p_t(x-i\Delta x, z)] \notag\\
 			+&(\frac{v\Delta t}{\Delta z})^2\sum_{i=1}^n c_i[p_t(x, z+i\Delta z)+p_t(x, -i\Delta z)] \notag\\
-			+&[(\frac{v\Delta t}{\Delta x})^2c_0+(\frac{v\Delta t}{\Delta z})^2c_0+2]p_t(x,z)\notag\\
+			+&[(\frac{v\Delta t}{\Delta x})^2c_0+(\frac{v\Delta t}{\Delta z})^2c_0]p_t(x,z)\notag\\
 			+&2p_t(x,z)-p_{t-1}(x,z)=p_{t+1}(x,z)
 			\label{FD-n}
 		\end{align}
@@ -132,7 +132,7 @@ end
 		\begin{align}
 			&(\frac{v\Delta t}{\Delta x})^2\sum_{i=1}^n c_i[p_t(x+i\Delta x,z)+p_t(x-i\Delta x, z)] \notag\\
 			+&(\frac{v\Delta t}{\Delta z})^2\sum_{i=1}^n c_i[p_t(x, z+i\Delta z)+p_t(x, -i\Delta z)] \notag\\
-			+&[(\frac{v\Delta t}{\Delta x})^2c_0+(\frac{v\Delta t}{\Delta z})^2c_0+2]p_t(x,z)\notag\\
+			+&[(\frac{v\Delta t}{\Delta x})^2c_0+(\frac{v\Delta t}{\Delta z})^2c_0]p_t(x,z)\notag\\
 			+&(2-\kappa)p_t(x,z)-(1-\kappa)p_{t-1}(x,z)=p_{t+1}(x,z) \notag\\
 			,&where\ \kappa=(\frac{d_{i2b}}{D_{abc}})^2\times 3.0 \times  16 v_{min}\times \Delta t 
 			\label{FD-ABC}			
