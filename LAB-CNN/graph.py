@@ -3,6 +3,7 @@ from unit.conv import conv2d
 from unit.pool import max_pool_argmax
 from unit.BN import BN
 from unit.NN import NN
+from unit.deconv import deconv2d
 import os
 import numpy as np
 
@@ -20,17 +21,20 @@ class CNN(object):
 
         # store the conv layers' result
         self.conv_result = []
+        self.deconv_result = []
 
         # store for networks Variables
         self.conv = []
         self.bn = []
         self.pool = []
         self.nn = []
+        self.deconv = []
 
         # used to stored para as a .npy file and read them from a npy file
         self.conv_init = {}
         self.nn_init={}
         self.bn_init = {}
+        self.deconv_init = {}
         self.stru = []
         self.bn_i = 0
         self.conv_i = 0
@@ -41,7 +45,8 @@ class CNN(object):
         self.output_nodes = None
         self.conv_trainable = True
 
-    def cnn_network(self):
+    def network(self):
+        '''to build a network, you can define your own network here'''
         [images, _, _, is_training, keep] = self.feed
 
         # configuration for BN
@@ -126,7 +131,7 @@ class CNN(object):
             # placeholder must have some values to feed, so we store them in self.feed
             self.feed = [images, labels, learning_rate, is_training, keep]
 
-            x = self.cnn_network()
+            x = self.network()
             loss = self.loss_define(x, labels)
             # train and others
             with tf.name_scope('other'):
@@ -137,13 +142,14 @@ class CNN(object):
             summary = self.summary(loss, result)
 
             ops = tf.get_collection('ops')
-            self.train = [train,ops]
+            self.train = [train, ops]
             self.para = [loss, result, summary]
 
         return self.graph
 
     def loss_define(self, x, labels):
-        with tf.name_scope('WightCrossEntro'):
+        '''this is loss define function for your network. The default is crossEntropy'''
+        with tf.name_scope('CrossE'):
             cost = labels * tf.log(x) + (1-labels)*tf.log(1-x)
             loss = tf.reduce_mean(cost)
             self.loss = loss
@@ -162,21 +168,26 @@ class CNN(object):
 
             tf.summary.scalar('loss', loss)
             tf.summary.scalar('accuracy', accuracy)
-            tf.summary.image('input', self.feed[0])
+            tf.summary.image('input', images)
 
-
+            for i in range(len(self.conv_result)):
+                tf.summary.image('conv_result_%s'%i, tf.slice(self.conv_result[i], [0,0,0,0],
+                                                              [1, self.conv_result[i].shape[1], self.conv_result[i].shape[2], 1]))
 
             for i in range(len(self.conv)):
                 tf.summary.histogram('conv%sDist' % i, self.conv[i])
             for i in range(len(self.nn)):
                 tf.summary.histogram('nn%sDist' % i, self.nn[i])
+            for i in range(len(self.deconv)):
+                tf.summary.histogram('nn%sDist' % i, self.deconv[i])
             summary = tf.summary.merge_all()
 
         return summary
 
     def collection(self):
-
+        '''get variable name from tf.collection'''
         self.conv = tf.get_collection('conv_core')
+        self.deconv = tf.get_collection('deconv_cores')
         for i in range(len(tf.get_collection('shift'))):
             self.bn.append(
                 [tf.get_collection('shift')[i], tf.get_collection('scale')[i], tf.get_collection('moving_mean')[i],
@@ -186,8 +197,8 @@ class CNN(object):
                 [tf.get_collection('w')[i], tf.get_collection('b')[i]]
             )
 
-    def save_para_fcn(self, sess, file_name, NUM=1):
-
+    def save_para(self, sess, file_name, NUM=1):
+        '''save the para to a file'''
         c = file_name.split('/')
         c.pop(-1)
         path = ''
@@ -200,17 +211,19 @@ class CNN(object):
         feedData = {self.feed[0]: np.zeros([NUM]+self.INPUT_SHAPE).astype('float32'),
                     self.feed[1]: np.zeros([NUM]+self.OUTPUT_SHAPE).astype('float32'),
                     self.feed[2]: 1e-3, self.feed[3]: False, self.feed[4]: 1}
-        fetchVariables = [self.conv, self.bn, self.nn]
+        fetchVariables = [self.conv, self.bn, self.deconv, self.nn]
         # get weights
-        [cores, bn, nn] = sess.run(fetches=fetchVariables, feed_dict=feedData)
+        [cores, bn, decores,  nn] = sess.run(fetches=fetchVariables, feed_dict=feedData)
 
         # save them
         print('*******restoreing para*********')
-        dic = {'conv_init': {}, 'bn_init': {}, 'nn_init':{}}
+        dic = {'conv_init': {}, 'bn_init': {}, 'nn_init':{}, 'deconv_init':{}}
         for i in range(len(cores)):
             dic['conv_init'][i] = np.array(cores[i])
         for i in range(len(bn)):
             dic['bn_init'][i] = np.array(bn[i])
+        for i in range(len(decores)):
+            dic['deconv_init'][i] = np.array(decores[i])
         for i in range(len(nn)):
             dic['nn_init'][i] = np.array(nn[i])
         dic['structure'] = self.stru
@@ -220,7 +233,7 @@ class CNN(object):
 
     def restore_para(self, filename, FROMCNN=False):
         '''
-        这是一个启用网络参数的函数，主要包括bn,卷积核与反卷积核，以及用于重建网络的一个字符串
+        resuse the para in file
         :param filename:
         :return:
         '''
@@ -228,6 +241,7 @@ class CNN(object):
 
         self.bn_init = para_dict['bn_init']
         self.conv_init = para_dict['conv_init']
+        self.deconv_init = para_dict['deconv_init']
         self.nn_init = para_dict['nn_init']
 
     def flatten(self, x):
@@ -238,17 +252,21 @@ class CNN(object):
         return x
 
     def activate(self, x):
+        '''activate function, you can override it by your self'''
         return tf.nn.relu(x)
 
     def dropout(self, x, keep_probability, noise_shape=None):
+        '''dropout'''
         if noise_shape is not None:
             oup = tf.nn.dropout(x=x, keep_prob=keep_probability, noise_shape=noise_shape)
         else:
-            oup = tf.nn.dropout(x=x, keep_prob=keep_probability)
+            shape = x.shape.as_list()
+            noise_shape=[1]*(len(shape)-1)+[shape[-1]]
+            oup = tf.nn.dropout(x=x, keep_prob=keep_probability, noise_shape=noise_shape)
         return oup
 
     def maxpool(self, input, conf={}):
-        # 池化层
+        '''maxpool'''
         oup, _ = max_pool_argmax(input, conf)
         self.stru.append('pool_%s'%conf['ksize'][1])
         return oup
@@ -259,6 +277,18 @@ class CNN(object):
         oup = conv2d(input, conf, trainable=trainable, core_init=self.conv_init.get(self.conv_i))
         self.conv_i= self.conv_i+1
         self.stru.append('conv1d')
+        return oup
+
+    def DECONV(self, input, conf, use_bilinear=False, trainable=None):
+        '''conf_sample = {  'scale'             :2,
+                            'outputChn'         :128,
+                            'outputSize'       :[128,128]}'''
+        if trainable is None:
+            trainable = True
+        oup = deconv2d(input, conf, use_bilinear=use_bilinear, trainable=trainable,
+                       core_init=self.deconv_init.get(self.deconv_i))
+        self.deconv_i = self.deconv_i + 1
+        self.stru.append('deconv2d')
         return oup
 
     def BN(self, input, conf, trainable=None):
@@ -276,5 +306,3 @@ class CNN(object):
         oup = NN(input, conf, trainable, core_init = self.nn_init.get(self.nn_i))
         self.nn_i = self.nn_i+1
         return oup
-
-
